@@ -3,7 +3,6 @@ const Campsite = require("../models/campsite");
 const campsiteRouter = express.Router();
 const authenticate = require("../authenticate");
 
-
 campsiteRouter
   .route("/")
   .get((req, res, next) => {
@@ -195,9 +194,7 @@ campsiteRouter
   .post(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end(
-      `POST operation not supported on /campsites/${rea.params.campsite.Id}/comments/${req.params.commentId}`
-      
-      .put(
+      `POST operation not supported on /campsites/${rea.params.campsite.Id}/comments/${req.params.commentId}`.put(
         (req, res, next) => {
           Campsite.findById(req.params.campsiteId)
             .then((campsite) => {
@@ -215,41 +212,47 @@ campsiteRouter
                   err.status = 403;
                   return next(err);
                 }
-            } else if (!campsite) {
-              err = new Error(`Campsite ${req.params.campsiteId} not found`);
-              err.status = 404;
-              return next(err);
-            } else {
-              err = new Error(`Comment ${req.params.campsiteId} not found`);
-              err.status = 404;
-              return next(err);
-            }
-        })
-          .catch((err) => next(err));
-      }))
+              } else if (!campsite) {
+                err = new Error(`Campsite ${req.params.campsiteId} not found`);
+                err.status = 404;
+                return next(err);
+              } else {
+                err = new Error(`Comment ${req.params.campsiteId} not found`);
+                err.status = 404;
+                return next(err);
+              }
+            })
+            .catch((err) => next(err));
+        }
+      )
+    );
   })
 
   .delete(authenticate.verifyUser, (req, res, next) => {
-    Campsite.findById(req.params.campsiteId).then((campsite) => {
-      if (campsite && campsite.comments.Id(req.params.commentId)) {
-        if (
-          req.user._id.equals(campsite.comments.id(req.params.commentId).author)
-        ) {
-          res.statusCode = 200;
-          res
-            .setHeader("Content-Type", "application.json")
-            .res.json(campsite.comments.id(req.params.commentId));
-        } else {
-          err = new Error("Access denied");
-          err.status = 403;
+    Campsite.findById(req.params.campsiteId)
+      .then((campsite) => {
+        if (campsite && campsite.comments.Id(req.params.commentId)) {
+          if (
+            req.user._id.equals(
+              campsite.comments.id(req.params.commentId).author
+            )
+          ) {
+            res.statusCode = 200;
+            res
+              .setHeader("Content-Type", "application.json")
+              .res.json(campsite.comments.id(req.params.commentId));
+          } else {
+            err = new Error("Access denied");
+            err.status = 403;
+            return next(err);
+          }
+        } else if (!campsite) {
+          err = new Error(`Campsite ${req.params.campsiteId} not found`);
+          err.status = 404;
           return next(err);
         }
-      } else if (!campsite) {
-        err = new Error(`Campsite ${req.params.campsiteId} not found`);
-        err.status = 404;
-        return next(err);
-      }
-
-
+      })
+      .catch((err) => next(err));
+  });
 
 module.exports = campsiteRouter;
