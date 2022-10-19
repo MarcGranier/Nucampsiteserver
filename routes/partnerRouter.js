@@ -59,7 +59,7 @@ partnerRouter
       `POST operation not supported on /partners/${req.params.partnerId}`
     );
   })
-  .put(authenticate.verifyUser, authenticate.verifyUser, (req, res, next) => {
+  .put(authenticate.verifyUser, authenticate.verifyAdmin, (req, res, next) => {
     Partner.findByIdAndUpdate(
       req.params.partnerId,
       {
@@ -76,7 +76,7 @@ partnerRouter
   })
   .delete(
     authenticate.verifyUser,
-    authenticate.verifyUser,
+    authenticate.verifyAdmin,
     (req, res, next) => {
       Partner.findByIdAndDelete(req.params.partnerId)
         .then((response) => {
